@@ -5,10 +5,12 @@ import domain.model.ScenarioType
 import domain.repository.ScenarioRepository
 
 class InMemoryScenarioRepository(
-    private val scenarios: List<Scenario>,
+    initialScenarios: List<Scenario>,
 ) : ScenarioRepository {
 
-    override fun findAll(): List<Scenario> = scenarios
+    private val scenarios = initialScenarios.toMutableList()
+
+    override fun findAll(): List<Scenario> = scenarios.toList()
 
     override fun findById(id: String): Scenario? = scenarios.find { it.id == id }
 
@@ -24,4 +26,10 @@ class InMemoryScenarioRepository(
     }
 
     override fun countByType(type: ScenarioType): Int = scenarios.count { it.type == type }
+
+    override fun addAll(scenarios: List<Scenario>) {
+        val existingIds = this.scenarios.map { it.id }.toSet()
+        val newScenarios = scenarios.filter { it.id !in existingIds }
+        this.scenarios.addAll(newScenarios)
+    }
 }

@@ -1,5 +1,8 @@
 package domain.model
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class Scenario(
     val id: String,
     val title: String,

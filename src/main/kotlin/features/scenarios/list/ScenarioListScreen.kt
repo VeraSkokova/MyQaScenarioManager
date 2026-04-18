@@ -5,17 +5,26 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.FileDownload
+import androidx.compose.material.icons.filled.FileUpload
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import core.components.StatusBadge
 import core.components.badgeColors
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import java.awt.FileDialog
+import java.awt.Frame
+import java.io.File
+import java.nio.file.Path
 
 @Composable
 fun ScenarioListScreen(
@@ -40,18 +49,72 @@ private fun ScenarioListContent(
     state: ScenarioListState,
     onEvent: (ScenarioListEvent) -> Unit,
 ) {
+    val scope = rememberCoroutineScope()
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(24.dp),
     ) {
-        Text(
-            text = "Scenarios",
-            style = MaterialTheme.typography.headlineLarge,
-            modifier = Modifier.testTag("scenario_list_title"),
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = "Scenarios",
+                style = MaterialTheme.typography.headlineLarge,
+                modifier = Modifier.testTag("scenario_list_title"),
+            )
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedButton(
+                    onClick = {
+                        scope.launch(Dispatchers.IO) {
+                            chooseExportFile()?.let { path ->
+                                onEvent(ScenarioListEvent.ExportScenarios(path))
+                            }
+                        }
+                    },
+                    modifier = Modifier.testTag("export_scenarios_button"),
+                ) {
+                    Icon(Icons.Default.FileDownload, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(Modifier.width(4.dp))
+                    Text("Export")
+                }
+                OutlinedButton(
+                    onClick = {
+                        scope.launch(Dispatchers.IO) {
+                            chooseImportFile()?.let { path ->
+                                onEvent(ScenarioListEvent.ImportScenarios(path))
+                            }
+                        }
+                    },
+                    modifier = Modifier.testTag("import_scenarios_button"),
+                ) {
+                    Icon(Icons.Default.FileUpload, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(Modifier.width(4.dp))
+                    Text("Import")
+                }
+            }
+        }
 
         Spacer(Modifier.height(16.dp))
+
+        state.userMessage?.let { message ->
+            Snackbar(
+                action = {
+                    TextButton(onClick = { onEvent(ScenarioListEvent.DismissMessage) }) {
+                        Text("Dismiss")
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag("scenario_user_message"),
+            ) {
+                Text(message)
+            }
+            Spacer(Modifier.height(8.dp))
+        }
 
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -90,6 +153,25 @@ private fun ScenarioListContent(
             }
         }
     }
+}
+
+private fun chooseExportFile(): Path? {
+    val dialog = FileDialog(null as Frame?, "Export Scenarios", FileDialog.SAVE)
+    dialog.file = "scenarios.json"
+    dialog.isVisible = true
+    val dir = dialog.directory ?: return null
+    val file = dialog.file ?: return null
+    val target = if (file.endsWith(".json")) file else "$file.json"
+    return File(dir, target).toPath()
+}
+
+private fun chooseImportFile(): Path? {
+    val dialog = FileDialog(null as Frame?, "Import Scenarios", FileDialog.LOAD)
+    dialog.setFilenameFilter { _, name -> name.endsWith(".json") }
+    dialog.isVisible = true
+    val dir = dialog.directory ?: return null
+    val file = dialog.file ?: return null
+    return File(dir, file).toPath()
 }
 
 @Composable
