@@ -1,187 +1,54 @@
-# CLAUDE.md
+# QA Scenario Manager — Project Context
 
-## Project
-
-QA Scenario Manager is a desktop-first Kotlin app for managing QA scenarios, smoke runs, results, environments, and linked defects. Build for Compose Desktop first. Keep the project local-first: no backend, auth, or network unless explicitly requested.[1][2][3]
+Desktop-first Kotlin app for managing QA scenarios, smoke runs, results, environments, and linked defects.
+Local-first: no backend, auth, or network unless explicitly requested.
 
 ## Stack
-
 - Kotlin
 - Gradle Kotlin DSL
 - Compose Desktop / Compose Multiplatform
-- Coroutines
-- StateFlow
+- Coroutines + StateFlow
 - In-memory repositories first
 
-## Core rules
+## Architecture
+Unidirectional data flow: **state down, events up**.
+- One screen → one main state object
+- Hoist state to the lowest useful owner
+- Business logic lives in ViewModels/UseCases, never in Composables
 
-- Use unidirectional data flow: state down, events up.[4][5]
-- One screen = one main state object.[4]
-- Hoist state to the lowest useful owner.[6]
-- Keep composables mostly stateless.[4][6]
-- Business logic belongs in state holders, use cases, or repositories, not composables.[4][5]
-- Expose immutable state; keep mutable flow private.[4]
-- Prefer immutable `data class` models and typed enums/sealed interfaces.[7][8]
-- Use stable semantics/test hooks on important UI controls for future smoke automation.[9][10]
+## Code Rules
+- Immutable public state (`data class`, `val`)
+- Typed events (`sealed class`) — no arbitrary strings for status
+- Stable semantics on interactive elements (for future smoke automation)
+- Use latest stable library versions
+- Gradle Kotlin DSL only — no Groovy
+- No `var` inside `data class`
+- No silent exception swallowing — handle explicitly or via `CoroutineExceptionHandler`
+- No Java-style Kotlin (no explicit getters/setters, no utility classes over top-level functions)
 
-## Package structure
-
-```text
-app/
-core/
-domain/
-data/
-features/
-```
-
-Typical screen files:
-- `XxxScreen.kt`
-- `XxxState.kt`
-- `XxxEvent.kt`
-- `XxxViewModel.kt`
-
-## Domain model
-
-Core entities:
-- `Scenario`
-- `ScenarioStep`
-- `TestRun`
-- `RunScenarioResult`
-- `Environment`
-- `BuildInfo`
-- `Defect`
-- `Tag`
-
-Core enums:
-- `ScenarioType { SMOKE, FUNCTIONAL }`
-- `ScenarioPriority { LOW, MEDIUM, HIGH, CRITICAL }`
-- `RunStatus { DRAFT, IN_PROGRESS, COMPLETED }`
-- `ResultStatus { PASSED, FAILED, BLOCKED, NOT_RUN }`
-
-## Naming
-
-- Screens: `ScenarioListScreen`, `RunDetailsScreen`
-- State: `ScenarioListState`
-- Events: `ScenarioListEvent`
-- State holders: `ScenarioListViewModel`
-- Repositories: `ScenarioRepository`, `InMemoryScenarioRepository`
-- Use cases: `CreateRunUseCase`
-
-Prefer domain names over generic names. Example: `markScenarioFailed()` is better than `handleClick()`.
-
-## Good patterns
-
-### Immutable model
-
+## Canonical Pattern
 ```kotlin
-data class Scenario(
-    val id: String,
-    val title: String,
-    val type: ScenarioType,
-    val priority: ScenarioPriority,
-    val steps: List<ScenarioStep>,
-    val expectedResult: String,
-    val linkedDefectIds: List<String> = emptyList()
+// State
+data class ScenarioListState(
+    val scenarios: List<Scenario> = emptyList(),
+    val isLoading: Boolean = false,
+    val error: String? = null
 )
-```
 
-### Typed events
-
-```kotlin
-sealed interface ScenarioListEvent {
-    data class SearchChanged(val query: String) : ScenarioListEvent
-    data class SmokeFilterChanged(val enabled: Boolean) : ScenarioListEvent
-    data class ScenarioSelected(val scenarioId: String) : ScenarioListEvent
-    data object CreateScenarioClicked : ScenarioListEvent
+// Events
+sealed class ScenarioListEvent {
+    data class SelectScenario(val id: String) : ScenarioListEvent()
+    data object DismissError : ScenarioListEvent()
 }
-```
 
-### State holder
-
-```kotlin
-class ScenarioListViewModel(
-    private val scenarioRepository: ScenarioRepository
-) {
+// ViewModel
+class ScenarioListViewModel : ViewModel() {
     private val _state = MutableStateFlow(ScenarioListState())
     val state: StateFlow<ScenarioListState> = _state.asStateFlow()
-
-    fun onEvent(event: ScenarioListEvent) {
-        when (event) {
-            is ScenarioListEvent.SearchChanged -> _state.update { it.copy(searchQuery = event.query) }
-            is ScenarioListEvent.SmokeFilterChanged -> _state.update { it.copy(smokeOnly = event.enabled) }
-            is ScenarioListEvent.ScenarioSelected -> _state.update { it.copy(selectedScenarioId = event.scenarioId) }
-            ScenarioListEvent.CreateScenarioClicked -> Unit
-        }
-    }
+    fun onEvent(event: ScenarioListEvent) { /* update _state */ }
 }
-```
 
-### Stateless UI
-
-```kotlin
-@Composable
-fun ScenarioListToolbar(
-    searchQuery: String,
-    smokeOnly: Boolean,
-    onSearchChange: (String) -> Unit,
-    onSmokeOnlyChange: (Boolean) -> Unit,
-    onCreateClick: () -> Unit
-) {
-    Button(
-        onClick = onCreateClick,
-        modifier = Modifier.semantics { testTag = "create_scenario_button" }
-    ) {
-        Text("New scenario")
-    }
-}
-```
-
-## Anti-patterns
-
-- Business logic or repository access inside composables.[4][5]
-- Global mutable UI state.
-- Stringly-typed statuses like `"failed"` instead of enums.[7][8]
-- Huge screen files mixing UI, fake data, mapping, and logic.
-- Ambiguous automation hooks, for example several buttons all labeled `Save`.[9]
-
-Bad example:
-
-```kotlin
-@Composable
-fun ScenarioListScreen(repository: ScenarioRepository) {
-    val scenarios = repository.findAll().filter { it.type.name == "SMOKE" }
-}
-```
-
-## Typical file templates
-
-### State
-
-```kotlin
-data class ScenarioListState(
-    val searchQuery: String = "",
-    val smokeOnly: Boolean = false,
-    val selectedScenarioId: String? = null,
-    val isLoading: Boolean = false,
-    val errorMessage: String? = null
-)
-```
-
-### Event
-
-```kotlin
-sealed interface ScenarioListEvent {
-    data class SearchChanged(val query: String) : ScenarioListEvent
-    data class SmokeFilterChanged(val enabled: Boolean) : ScenarioListEvent
-    data class ScenarioSelected(val scenarioId: String) : ScenarioListEvent
-    data object CreateScenarioClicked : ScenarioListEvent
-    data object DismissError : ScenarioListEvent
-}
-```
-
-### Screen
-
-```kotlin
+// Screen — render from state only, emit intent via onEvent
 @Composable
 fun ScenarioListScreen(viewModel: ScenarioListViewModel) {
     val state by viewModel.state.collectAsState()
@@ -189,23 +56,91 @@ fun ScenarioListScreen(viewModel: ScenarioListViewModel) {
 }
 ```
 
-## Definition of done
+## Anti-patterns
+```kotlin
+// ❌ Business logic inside Composable
+@Composable fun ScenarioList() {
+    val filtered = scenarios.filter { it.status == "active" } // move to ViewModel
+}
 
-Generated code should:
-- compile;
-- follow state + events + state holder structure;
-- keep business logic out of composables;[4][5]
-- use immutable public state;[4]
-- use typed statuses/events;[7][8]
-- include stable semantics for important interactive elements.[9][10]
+// ❌ Mutable state in data class
+data class State(var isLoading: Boolean = false)
 
-## Agent behavior
+// ❌ Untyped status
+data class Scenario(val status: String) // use sealed class / enum
 
-When implementing a feature:
-1. Extend domain only if the business concept is real.
-2. Update `State`, `Event`, and `ViewModel/StateHolder` first.
-3. Keep changes local and incremental.
-4. Reuse existing patterns before inventing new ones.
-5. Do not add DB, DI, networking, or major libraries without explicit request.
+// ❌ Silent catch
+try { repo.load() } catch (e: Exception) { } // always handle or rethrow
 
-If existing code conflicts with this file, prefer the real project style unless it clearly harms readability, correctness, or testability.
+// ❌ Groovy Gradle
+apply plugin: 'kotlin' // use build.gradle.kts
+```
+
+## Generated Code Checklist
+- [ ] Compiles
+- [ ] Follows state + events + state holder structure
+- [ ] No business logic in Composables
+- [ ] Immutable public state
+- [ ] Typed events and statuses
+- [ ] Stable semantics on important interactive elements
+
+***
+
+# Agent Profiles
+
+Use a tag at the start of your request to activate a profile:
+- `[BUGFIX]` — find, fix, verify
+- `[RESEARCH]` — explore and explain, no changes
+
+***
+
+## [BUGFIX] Bug Fix Agent
+
+**Role:** Debug engineer. Receive a bug description → find root cause → fix → verify nothing broke.
+
+### ✅ Must do
+1. Read logs and stderr **before** any changes
+2. Run tests **before** the fix — record baseline (`./gradlew test`)
+3. Search for root cause: grep imports, trace call chains, check related modules
+4. Apply **only** a targeted fix — no unrelated changes
+5. Run tests **after** the fix — all must pass
+6. Run linter / static analysis (`./gradlew detekt` or equivalent)
+7. Check edge cases: null, empty list, boundary values
+
+### ❌ Must not do
+- Ignore failing tests — if red, explain why
+- Refactor unrelated code alongside the fix
+- Delete tests to get a green build
+- Change public API without explicit instruction
+- Apply a fix without understanding the root cause
+
+### 📋 Response format
+**🔍 Found:** `file:line`, root cause, related files  
+**🔧 Fixed:** change description, `file:line`, why  
+**✅ Verified:** tests before/after, linter result, edge cases checked
+
+***
+
+## [RESEARCH] Research Agent
+
+**Role:** Codebase analyst. Explore the project and deliver a structured answer. **Never modify any file.**
+
+### ✅ Must do
+1. Start with project map: `tree` or `find` to understand structure
+2. Read entry points: `main.kt`, `App.kt`, root `build.gradle.kts`
+3. Trace call chains from entry point to relevant logic
+4. Search with `grep -r` for functions, classes, patterns
+5. Read configs: `build.gradle.kts`, `settings.gradle.kts`, `gradle.properties`
+6. Map module dependencies
+7. Always reference specific `file:line` in the answer
+
+### ❌ Must not do
+- **Modify any file** — absolute prohibition
+- Run commands with side effects (`install`, `migrate`, `clean build`)
+- Answer without concrete file references
+- Assume without checking the code
+
+### 📋 Response format
+**🗂 Structure:** relevant folder tree  
+**🔗 Dependencies:** which module/class uses what (`file:line`)  
+**💡 Conclusion:** direct answer + key files + risks or non-obvious spots
