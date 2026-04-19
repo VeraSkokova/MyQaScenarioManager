@@ -32,7 +32,9 @@ class RunDetailsViewModel(
                 // handled at screen level
             }
             is RunDetailsEvent.StatusChanged -> {
-                testRunRepository.updateResultStatus(event.resultId, event.newStatus, "")
+                val existingComment = _state.value.results
+                    .find { it.resultId == event.resultId }?.comment.orEmpty()
+                testRunRepository.updateResultStatus(event.resultId, event.newStatus, existingComment)
                 load()
             }
         }

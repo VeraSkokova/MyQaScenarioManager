@@ -158,7 +158,7 @@ private fun ResultRow(
                 if (result.comment.isNotBlank()) {
                     Spacer(Modifier.height(4.dp))
                     Text(
-                        text = result.comment,
+                        text = result.comment.trim(),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
