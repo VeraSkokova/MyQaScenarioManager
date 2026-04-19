@@ -16,6 +16,7 @@ import features.runs.details.RunDetailsScreen
 import features.runs.list.RunListScreen
 import features.scenarios.details.ScenarioDetailsScreen
 import features.scenarios.list.ScenarioListScreen
+import features.settings.SettingsScreen
 
 @Composable
 fun AppContent(
@@ -69,16 +70,7 @@ fun AppContent(
                     )
                 }
                 is Route.Settings -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Text(
-                            text = "Settings — coming soon",
-                            style = MaterialTheme.typography.headlineMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
+                    SettingsScreen()
                 }
             }
         }
