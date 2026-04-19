@@ -1,3 +1,5 @@
+// src/main/kotlin/domain/repository/ScenarioRepository.kt
+
 package domain.repository
 
 import domain.model.Scenario
@@ -21,5 +23,12 @@ interface ScenarioRepository {
         val pw = PrintWriter(fw)
         pw.println(json.toString())
         pw.close()
+    }
+
+    /**
+     * Loads a list of scenarios from JSON file.
+     */
+    fun loadFromJson(file: String): List<Scenario> {
+        // Add the implementation for loading scenarios from a JSON file
     }
 }
