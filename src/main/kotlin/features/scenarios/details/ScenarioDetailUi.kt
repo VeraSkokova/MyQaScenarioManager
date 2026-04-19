@@ -1,5 +1,6 @@
 package features.scenarios.details
 
+import domain.model.DefectStatus
 import domain.model.ScenarioPriority
 import domain.model.ScenarioType
 
@@ -24,5 +25,5 @@ data class DefectUi(
     val id: String,
     val title: String,
     val url: String,
-    val status: String,
+    val status: DefectStatus,
 )

@@ -181,7 +181,7 @@ private fun ScenarioDetailsContent(
                                 )
                                 Spacer(Modifier.height(4.dp))
                                 Text(
-                                    text = "${defect.status} · ${defect.url}",
+                                    text = "${defect.status.name.replace("_", " ")} · ${defect.url}",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onErrorContainer.copy(alpha = 0.7f),
                                 )

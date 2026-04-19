@@ -187,19 +187,19 @@ object SeedData {
             id = "defect-1",
             title = "Login fails with special characters in password",
             url = "https://tracker.example.com/issues/BUG-101",
-            status = "open",
+            status = DefectStatus.OPEN,
         ),
         Defect(
             id = "defect-2",
             title = "Cart total rounding error on multi-currency checkout",
             url = "https://tracker.example.com/issues/BUG-205",
-            status = "in-progress",
+            status = DefectStatus.IN_PROGRESS,
         ),
         Defect(
             id = "defect-3",
             title = "Search timeout on catalogs with 10k+ products",
             url = "https://tracker.example.com/issues/BUG-312",
-            status = "open",
+            status = DefectStatus.OPEN,
         ),
     )
 
