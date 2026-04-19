@@ -100,11 +100,15 @@ private fun DashboardContent(
         Text(
             text = "Recent Runs",
             style = MaterialTheme.typography.titleLarge,
+            modifier = Modifier.testTag("dashboard_recent_runs_title"),
         )
 
         Spacer(Modifier.height(12.dp))
 
-        LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        LazyColumn(
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.testTag("dashboard_recent_runs_list"),
+        ) {
             items(state.recentRuns, key = { it.id }) { run ->
                 Card(
                     modifier = Modifier
