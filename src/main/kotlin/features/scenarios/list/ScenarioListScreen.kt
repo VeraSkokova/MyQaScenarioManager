@@ -118,12 +118,38 @@ private fun ScenarioListContent(
 
         Spacer(Modifier.height(12.dp))
 
-        Text(
-            text = "${state.scenarios.size} of ${state.totalCount} scenarios",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.testTag("scenario_filtered_count"),
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = "${state.scenarios.size} of ${state.totalCount} scenarios",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.testTag("scenario_filtered_count"),
+            )
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                val sortLabel = when (state.sortOption) {
+                    ScenarioSortOption.TITLE_ASC -> "Title A-Z"
+                    ScenarioSortOption.TITLE_DESC -> "Title Z-A"
+                    ScenarioSortOption.PRIORITY_ASC -> "Priority Low-High"
+                    ScenarioSortOption.PRIORITY_DESC -> "Priority High-Low"
+                }
+                val nextSort = when (state.sortOption) {
+                    ScenarioSortOption.TITLE_ASC -> ScenarioSortOption.TITLE_DESC
+                    ScenarioSortOption.TITLE_DESC -> ScenarioSortOption.PRIORITY_DESC
+                    ScenarioSortOption.PRIORITY_DESC -> ScenarioSortOption.PRIORITY_ASC
+                    ScenarioSortOption.PRIORITY_ASC -> ScenarioSortOption.TITLE_ASC
+                }
+                TextButton(
+                    onClick = { onEvent(ScenarioListEvent.SortChanged(nextSort)) },
+                    modifier = Modifier.testTag("scenario_sort_toggle"),
+                ) {
+                    Text(sortLabel)
+                }
+            }
+        }
 
         Spacer(Modifier.height(8.dp))
 

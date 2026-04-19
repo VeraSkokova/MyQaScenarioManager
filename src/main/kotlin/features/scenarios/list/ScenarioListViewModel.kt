@@ -42,6 +42,10 @@ class ScenarioListViewModel(
                 }
                 reload()
             }
+            is ScenarioListEvent.SortChanged -> {
+                _state.update { it.copy(sortOption = event.sortOption) }
+                reload()
+            }
             is ScenarioListEvent.ScenarioSelected -> {
                 // handled at screen level via callback
             }
@@ -59,12 +63,19 @@ class ScenarioListViewModel(
 
     private fun reload() {
         val current = _state.value
-        val scenarios = scenarioRepository.findScenarios(
+        val filtered = scenarioRepository.findScenarios(
             query = current.searchQuery,
             smokeOnly = current.smokeOnly,
             priority = current.priorityFilter,
             tagIds = current.selectedTagIds,
-        ).map { scenario ->
+        )
+        val sorted = when (current.sortOption) {
+            ScenarioSortOption.TITLE_ASC -> filtered.sortedBy { it.title.lowercase() }
+            ScenarioSortOption.TITLE_DESC -> filtered.sortedByDescending { it.title.lowercase() }
+            ScenarioSortOption.PRIORITY_ASC -> filtered.sortedBy { it.priority.ordinal }
+            ScenarioSortOption.PRIORITY_DESC -> filtered.sortedByDescending { it.priority.ordinal }
+        }
+        val scenarios = sorted.map { scenario ->
             ScenarioListItemUi(
                 id = scenario.id,
                 title = scenario.title,
