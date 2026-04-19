@@ -16,8 +16,9 @@
 | 3 | Filter functionality | **Pass** |
 | 4 | View Details & Navigation Back | **Pass** |
 | 5 | Runs View | **Pass** |
+| 6 | Dark Theme Toggle | **Pass** |
 
-**Overall: 5/5 Passed**
+**Overall: 6/6 Passed**
 
 ---
 
@@ -106,6 +107,20 @@
   - Created: 2026-04-19 14:20
   - Status badge: DRAFT
   - Scenario Results: 4 scenarios, all with "NOT RUN" status badges
+
+---
+
+### 6. Dark Theme Toggle
+
+**Status:** Pass
+
+**Verified:**
+- Dashboard displays moon icon toggle button next to "Dashboard" title (light mode)
+- Clicked the toggle — app switches to dark theme: dark background (#121212), light text, dark card surfaces
+- Icon changes from moon (DarkMode) to sun (LightMode) in dark mode
+- Metric cards, recent runs list, status badges, and sidebar all render correctly in dark mode
+- Clicked the toggle again — app switches back to light theme with original colors
+- Icon returns to moon, confirming full round-trip
 
 ---
 

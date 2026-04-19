@@ -1,6 +1,9 @@
 package app
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
@@ -13,9 +16,14 @@ fun main(): Unit = application {
         title = "QA Scenario Manager",
         state = rememberWindowState(width = 1200.dp, height = 800.dp),
     ) {
-        AppTheme {
+        var isDarkTheme by remember { mutableStateOf(false) }
+        AppTheme(isDarkTheme = isDarkTheme) {
             val navigationState = remember { NavigationState() }
-            AppContent(navigationState = navigationState)
+            AppContent(
+                navigationState = navigationState,
+                isDarkTheme = isDarkTheme,
+                onToggleTheme = { isDarkTheme = !isDarkTheme },
+            )
         }
     }
 }

@@ -4,6 +4,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -20,12 +23,16 @@ import features.dashboard.components.MetricCard
 @Composable
 fun DashboardScreen(
     viewModel: DashboardViewModel,
+    isDarkTheme: Boolean = false,
+    onToggleTheme: () -> Unit = {},
     onRunClick: (String) -> Unit,
 ) {
     val state by viewModel.state.collectAsState()
 
     DashboardContent(
         state = state,
+        isDarkTheme = isDarkTheme,
+        onToggleTheme = onToggleTheme,
         onRunClick = onRunClick,
     )
 }
@@ -33,6 +40,8 @@ fun DashboardScreen(
 @Composable
 private fun DashboardContent(
     state: DashboardState,
+    isDarkTheme: Boolean,
+    onToggleTheme: () -> Unit,
     onRunClick: (String) -> Unit,
 ) {
     Column(
@@ -40,11 +49,26 @@ private fun DashboardContent(
             .fillMaxSize()
             .padding(24.dp),
     ) {
-        Text(
-            text = "Dashboard",
-            style = MaterialTheme.typography.headlineLarge,
-            modifier = Modifier.testTag("dashboard_title"),
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = "Dashboard",
+                style = MaterialTheme.typography.headlineLarge,
+                modifier = Modifier.testTag("dashboard_title"),
+            )
+            IconButton(
+                onClick = onToggleTheme,
+                modifier = Modifier.testTag("theme_toggle_button"),
+            ) {
+                Icon(
+                    imageVector = if (isDarkTheme) Icons.Default.LightMode else Icons.Default.DarkMode,
+                    contentDescription = if (isDarkTheme) "Switch to light theme" else "Switch to dark theme",
+                )
+            }
+        }
 
         Spacer(Modifier.height(24.dp))
 

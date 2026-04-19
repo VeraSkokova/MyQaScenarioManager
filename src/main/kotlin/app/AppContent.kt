@@ -3,7 +3,6 @@ package app
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.VerticalDivider
@@ -19,7 +18,11 @@ import features.scenarios.details.ScenarioDetailsScreen
 import features.scenarios.list.ScenarioListScreen
 
 @Composable
-fun AppContent(navigationState: NavigationState) {
+fun AppContent(
+    navigationState: NavigationState,
+    isDarkTheme: Boolean = false,
+    onToggleTheme: () -> Unit = {},
+) {
     Row(modifier = Modifier.fillMaxSize()) {
         SidebarNavigation(
             currentRoute = navigationState.currentRoute.value,
@@ -32,6 +35,8 @@ fun AppContent(navigationState: NavigationState) {
                     val viewModel = remember { AppModule.dashboardViewModel() }
                     DashboardScreen(
                         viewModel = viewModel,
+                        isDarkTheme = isDarkTheme,
+                        onToggleTheme = onToggleTheme,
                         onRunClick = { runId -> navigationState.navigateWithBackStack(Route.RunDetails(runId)) },
                     )
                 }
