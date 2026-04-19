@@ -59,6 +59,42 @@ class ScenarioListViewModelTest {
         assertEquals(3, vm.state.value.scenarios.size)
     }
 
+    // --- Smoke-only filter tests ---
+
+    @Test
+    fun `smoke filter off returns all scenarios`() {
+        val vm = createViewModel()
+        vm.onEvent(ScenarioListEvent.SmokeFilterChanged(false))
+        assertEquals(3, vm.state.value.scenarios.size)
+    }
+
+    @Test
+    fun `smoke filter on returns only smoke scenarios`() {
+        val vm = createViewModel()
+        vm.onEvent(ScenarioListEvent.SmokeFilterChanged(true))
+        assertEquals(2, vm.state.value.scenarios.size)
+        vm.state.value.scenarios.forEach {
+            assertEquals(ScenarioType.SMOKE, it.type)
+        }
+    }
+
+    @Test
+    fun `smoke filter combined with search`() {
+        val vm = createViewModel()
+        vm.onEvent(ScenarioListEvent.SmokeFilterChanged(true))
+        vm.onEvent(ScenarioListEvent.SearchChanged("dashboard"))
+        assertEquals(1, vm.state.value.scenarios.size)
+        assertEquals("3", vm.state.value.scenarios[0].id)
+    }
+
+    @Test
+    fun `smoke filter with non-smoke search returns empty`() {
+        val vm = createViewModel()
+        vm.onEvent(ScenarioListEvent.SmokeFilterChanged(true))
+        vm.onEvent(ScenarioListEvent.SearchChanged("checkout"))
+        assertEquals(0, vm.state.value.scenarios.size)
+    }
+
     private fun createViewModel(): ScenarioListViewModel {
         return ScenarioListViewModel(InMemoryScenarioRepository(scenarios))
     }
