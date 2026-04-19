@@ -106,6 +106,47 @@ class DashboardViewModelTest {
     }
 
     @Test
+    fun `pass rate is 100 when all executed results passed`() {
+        val vm = createViewModel(
+            results = mutableListOf(
+                result("1", "r1", ResultStatus.PASSED),
+                result("2", "r1", ResultStatus.PASSED),
+            ),
+        )
+        val passRate = vm.state.value.passRatePercent
+        assert(abs(passRate - 100f) < 0.01f) { "Expected 100% but was $passRate" }
+    }
+
+    @Test
+    fun `failed today count is zero when no failures today`() {
+        val vm = createViewModel(
+            results = mutableListOf(
+                result("1", "r1", ResultStatus.PASSED, executedAt = now),
+                result("2", "r1", ResultStatus.FAILED, executedAt = now - 48.hours),
+            ),
+        )
+        assertEquals(0, vm.state.value.failedTodayCount)
+    }
+
+    @Test
+    fun `smoke and total counts with no scenarios`() {
+        val vm = createViewModel(scenarios = emptyList())
+        assertEquals(0, vm.state.value.totalScenarios)
+        assertEquals(0, vm.state.value.smokeScenariosTotal)
+    }
+
+    @Test
+    fun `smoke count with all functional scenarios`() {
+        val scenarios = listOf(
+            scenario("s1", ScenarioType.FUNCTIONAL),
+            scenario("s2", ScenarioType.FUNCTIONAL),
+        )
+        val vm = createViewModel(scenarios = scenarios)
+        assertEquals(2, vm.state.value.totalScenarios)
+        assertEquals(0, vm.state.value.smokeScenariosTotal)
+    }
+
+    @Test
     fun `recent runs include scenario count`() {
         val run = TestRun(
             id = "r1",
