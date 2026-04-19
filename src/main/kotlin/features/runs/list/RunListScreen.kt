@@ -46,42 +46,57 @@ private fun RunListContent(
 
         Spacer(Modifier.height(16.dp))
 
-        LazyColumn(
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.testTag("run_list"),
-        ) {
-            items(state.runs, key = { it.id }) { run ->
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { onRunClick(run.id) }
-                        .testTag("run_row_${run.id}"),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
-                ) {
-                    Row(
+        if (state.runs.isEmpty()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .testTag("run_list_empty"),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    text = "No test runs yet",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        } else {
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.testTag("run_list"),
+            ) {
+                items(state.runs, key = { it.id }) { run ->
+                    Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(16.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically,
+                            .clickable { onRunClick(run.id) }
+                            .testTag("run_row_${run.id}"),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
                     ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = run.name,
-                                style = MaterialTheme.typography.bodyLarge,
-                            )
-                            Spacer(Modifier.height(4.dp))
-                            Text(
-                                text = "${run.environmentName} · ${run.scenarioCount} scenarios · ${run.createdAt}",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = run.name,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                )
+                                Spacer(Modifier.height(4.dp))
+                                Text(
+                                    text = "${run.environmentName} · ${run.scenarioCount} scenarios · ${run.createdAt}",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
+                            StatusBadge(
+                                text = run.status.name.replace("_", " "),
+                                colors = run.status.badgeColors(),
                             )
                         }
-                        StatusBadge(
-                            text = run.status.name.replace("_", " "),
-                            colors = run.status.badgeColors(),
-                        )
                     }
                 }
             }
