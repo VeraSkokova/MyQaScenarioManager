@@ -17,6 +17,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import core.components.StatusBadge
 import core.components.badgeColors
+import domain.model.ScenarioPriority
 
 @Composable
 fun ScenarioListScreen(
@@ -77,6 +78,26 @@ private fun ScenarioListContent(
             )
         }
 
+        Spacer(Modifier.height(8.dp))
+
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            ScenarioPriority.entries.forEach { priority ->
+                val selected = state.priorityFilter == priority
+                FilterChip(
+                    selected = selected,
+                    onClick = {
+                        val newPriority = if (selected) null else priority
+                        onEvent(ScenarioListEvent.PriorityFilterChanged(newPriority))
+                    },
+                    label = { Text(priority.name) },
+                    modifier = Modifier.testTag("scenario_priority_filter_${priority.name.lowercase()}"),
+                )
+            }
+        }
+
         Spacer(Modifier.height(16.dp))
 
         if (state.scenarios.isEmpty()) {
@@ -86,13 +107,14 @@ private fun ScenarioListContent(
                     .testTag("scenario_list_empty"),
                 contentAlignment = Alignment.Center,
             ) {
+                val hasFilters = state.smokeOnly || state.priorityFilter != null
                 val reason = when {
-                    state.searchQuery.isNotBlank() && state.smokeOnly ->
-                        "No smoke scenarios match \"${state.searchQuery}\""
+                    state.searchQuery.isNotBlank() && hasFilters ->
+                        "No scenarios match \"${state.searchQuery}\" with current filters"
                     state.searchQuery.isNotBlank() ->
                         "No scenarios match \"${state.searchQuery}\""
-                    state.smokeOnly ->
-                        "No smoke scenarios found"
+                    hasFilters ->
+                        "No scenarios match current filters"
                     else ->
                         "No scenarios yet"
                 }

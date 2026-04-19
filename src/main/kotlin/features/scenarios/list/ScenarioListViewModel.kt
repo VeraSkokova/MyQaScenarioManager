@@ -26,6 +26,10 @@ class ScenarioListViewModel(
                 _state.update { it.copy(smokeOnly = event.enabled) }
                 reload()
             }
+            is ScenarioListEvent.PriorityFilterChanged -> {
+                _state.update { it.copy(priorityFilter = event.priority) }
+                reload()
+            }
             is ScenarioListEvent.ScenarioSelected -> {
                 // handled at screen level via callback
             }
@@ -37,6 +41,7 @@ class ScenarioListViewModel(
         val scenarios = scenarioRepository.findScenarios(
             query = current.searchQuery,
             smokeOnly = current.smokeOnly,
+            priority = current.priorityFilter,
         ).map { scenario ->
             ScenarioListItemUi(
                 id = scenario.id,
