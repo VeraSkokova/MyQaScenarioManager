@@ -13,7 +13,12 @@ class InMemoryScenarioRepository(
 
     override fun findById(id: String): Scenario? = scenarios.find { it.id == id }
 
-    override fun findScenarios(query: String, smokeOnly: Boolean, priority: ScenarioPriority?): List<Scenario> {
+    override fun findScenarios(
+        query: String,
+        smokeOnly: Boolean,
+        priority: ScenarioPriority?,
+        tagIds: Set<String>,
+    ): List<Scenario> {
         val lowerQuery = query.lowercase()
         return scenarios.filter { scenario ->
             val matchesQuery = lowerQuery.isBlank() ||
@@ -21,7 +26,8 @@ class InMemoryScenarioRepository(
                 scenario.description.lowercase().contains(lowerQuery)
             val matchesType = !smokeOnly || scenario.type == ScenarioType.SMOKE
             val matchesPriority = priority == null || scenario.priority == priority
-            matchesQuery && matchesType && matchesPriority
+            val matchesTags = tagIds.isEmpty() || scenario.tags.any { it.id in tagIds }
+            matchesQuery && matchesType && matchesPriority && matchesTags
         }
     }
 

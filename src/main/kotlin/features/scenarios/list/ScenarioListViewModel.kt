@@ -13,6 +13,7 @@ class ScenarioListViewModel(
     val state: StateFlow<ScenarioListState> = _state.asStateFlow()
 
     init {
+        loadAvailableTags()
         reload()
     }
 
@@ -30,10 +31,29 @@ class ScenarioListViewModel(
                 _state.update { it.copy(priorityFilter = event.priority) }
                 reload()
             }
+            is ScenarioListEvent.TagFilterToggled -> {
+                _state.update { state ->
+                    val newTags = if (event.tagId in state.selectedTagIds) {
+                        state.selectedTagIds - event.tagId
+                    } else {
+                        state.selectedTagIds + event.tagId
+                    }
+                    state.copy(selectedTagIds = newTags)
+                }
+                reload()
+            }
             is ScenarioListEvent.ScenarioSelected -> {
                 // handled at screen level via callback
             }
         }
+    }
+
+    private fun loadAvailableTags() {
+        val allTags = scenarioRepository.findAll()
+            .flatMap { it.tags }
+            .distinctBy { it.id }
+            .sortedBy { it.name }
+        _state.update { it.copy(availableTags = allTags) }
     }
 
     private fun reload() {
@@ -42,6 +62,7 @@ class ScenarioListViewModel(
             query = current.searchQuery,
             smokeOnly = current.smokeOnly,
             priority = current.priorityFilter,
+            tagIds = current.selectedTagIds,
         ).map { scenario ->
             ScenarioListItemUi(
                 id = scenario.id,

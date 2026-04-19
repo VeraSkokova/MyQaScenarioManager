@@ -11,6 +11,7 @@ interface ScenarioRepository {
         query: String = "",
         smokeOnly: Boolean = false,
         priority: ScenarioPriority? = null,
+        tagIds: Set<String> = emptySet(),
     ): List<Scenario>
     fun countByType(type: ScenarioType): Int
 }

@@ -98,6 +98,24 @@ private fun ScenarioListContent(
             }
         }
 
+        if (state.availableTags.isNotEmpty()) {
+            Spacer(Modifier.height(8.dp))
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                state.availableTags.forEach { tag ->
+                    val selected = tag.id in state.selectedTagIds
+                    FilterChip(
+                        selected = selected,
+                        onClick = { onEvent(ScenarioListEvent.TagFilterToggled(tag.id)) },
+                        label = { Text(tag.name) },
+                        modifier = Modifier.testTag("scenario_tag_filter_${tag.id}"),
+                    )
+                }
+            }
+        }
+
         Spacer(Modifier.height(16.dp))
 
         if (state.scenarios.isEmpty()) {
