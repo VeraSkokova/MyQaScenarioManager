@@ -222,17 +222,7 @@ private fun ScenarioRow(
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     StatusBadge(
                         text = item.type.name,
-                        colors = if (item.type == domain.model.ScenarioType.SMOKE) {
-                            core.components.BadgeColors(
-                                androidx.compose.ui.graphics.Color(0xFF00897B),
-                                androidx.compose.ui.graphics.Color(0xFFE0F2F1),
-                            )
-                        } else {
-                            core.components.BadgeColors(
-                                androidx.compose.ui.graphics.Color(0xFF5E35B1),
-                                androidx.compose.ui.graphics.Color(0xFFEDE7F6),
-                            )
-                        },
+                        colors = item.type.badgeColors(),
                     )
                     StatusBadge(
                         text = item.priority.name,

@@ -77,17 +77,7 @@ private fun ScenarioDetailsContent(
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     StatusBadge(
                         text = scenario.type.name,
-                        colors = if (scenario.type == domain.model.ScenarioType.SMOKE) {
-                            core.components.BadgeColors(
-                                androidx.compose.ui.graphics.Color(0xFF00897B),
-                                androidx.compose.ui.graphics.Color(0xFFE0F2F1),
-                            )
-                        } else {
-                            core.components.BadgeColors(
-                                androidx.compose.ui.graphics.Color(0xFF5E35B1),
-                                androidx.compose.ui.graphics.Color(0xFFEDE7F6),
-                            )
-                        },
+                        colors = scenario.type.badgeColors(),
                     )
                     StatusBadge(
                         text = scenario.priority.name,
@@ -97,8 +87,8 @@ private fun ScenarioDetailsContent(
                         StatusBadge(
                             text = tag,
                             colors = core.components.BadgeColors(
-                                MaterialTheme.colorScheme.onSurfaceVariant,
-                                MaterialTheme.colorScheme.surfaceVariant,
+                                text = MaterialTheme.colorScheme.onSurfaceVariant,
+                                background = MaterialTheme.colorScheme.surfaceVariant,
                             ),
                         )
                     }
