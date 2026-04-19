@@ -116,7 +116,16 @@ private fun ScenarioListContent(
             }
         }
 
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(12.dp))
+
+        Text(
+            text = "${state.scenarios.size} of ${state.totalCount} scenarios",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.testTag("scenario_filtered_count"),
+        )
+
+        Spacer(Modifier.height(8.dp))
 
         if (state.scenarios.isEmpty()) {
             Box(

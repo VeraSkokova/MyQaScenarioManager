@@ -49,11 +49,12 @@ class ScenarioListViewModel(
     }
 
     private fun loadAvailableTags() {
-        val allTags = scenarioRepository.findAll()
+        val all = scenarioRepository.findAll()
+        val allTags = all
             .flatMap { it.tags }
             .distinctBy { it.id }
             .sortedBy { it.name }
-        _state.update { it.copy(availableTags = allTags) }
+        _state.update { it.copy(availableTags = allTags, totalCount = all.size) }
     }
 
     private fun reload() {

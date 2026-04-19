@@ -10,4 +10,5 @@ data class ScenarioListState(
     val selectedTagIds: Set<String> = emptySet(),
     val availableTags: List<Tag> = emptyList(),
     val scenarios: List<ScenarioListItemUi> = emptyList(),
+    val totalCount: Int = 0,
 )
