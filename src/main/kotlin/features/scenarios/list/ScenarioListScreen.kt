@@ -1,6 +1,7 @@
 package features.scenarios.list
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -78,15 +79,40 @@ private fun ScenarioListContent(
 
         Spacer(Modifier.height(16.dp))
 
-        LazyColumn(
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.testTag("scenario_list"),
-        ) {
-            items(state.scenarios, key = { it.id }) { item ->
-                ScenarioRow(
-                    item = item,
-                    onClick = { onEvent(ScenarioListEvent.ScenarioSelected(item.id)) },
+        if (state.scenarios.isEmpty()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .testTag("scenario_list_empty"),
+                contentAlignment = Alignment.Center,
+            ) {
+                val reason = when {
+                    state.searchQuery.isNotBlank() && state.smokeOnly ->
+                        "No smoke scenarios match \"${state.searchQuery}\""
+                    state.searchQuery.isNotBlank() ->
+                        "No scenarios match \"${state.searchQuery}\""
+                    state.smokeOnly ->
+                        "No smoke scenarios found"
+                    else ->
+                        "No scenarios yet"
+                }
+                Text(
+                    text = reason,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+            }
+        } else {
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.testTag("scenario_list"),
+            ) {
+                items(state.scenarios, key = { it.id }) { item ->
+                    ScenarioRow(
+                        item = item,
+                        onClick = { onEvent(ScenarioListEvent.ScenarioSelected(item.id)) },
+                    )
+                }
             }
         }
     }
